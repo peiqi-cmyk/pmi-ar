@@ -7,6 +7,28 @@
 <meta name="description" content="Scan the Welcome poster with your phone camera to bring it to life.">
 <script src="lib/aframe.min.js"></script>
 <script src="lib/mindar-image-aframe.prod.js"></script>
+<script>
+// Plays a "stacked alpha" video: colour in the top half, alpha mask in the bottom half.
+// Works with plain H.264 MP4, so the transparency shows on iPhone and Android alike.
+AFRAME.registerComponent('stacked-video', {
+  schema: { src: { type: 'selector' } },
+  init() {
+    const tex = new THREE.VideoTexture(this.data.src);
+    tex.colorSpace = THREE.NoColorSpace;
+    tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; tex.generateMipmaps = false;
+    this.mat = new THREE.ShaderMaterial({
+      uniforms: { map: { value: tex } },
+      transparent: true, depthWrite: false, side: THREE.DoubleSide,
+      vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+      fragmentShader: 'uniform sampler2D map; varying vec2 vUv; void main(){ vec3 c = texture2D(map, vec2(vUv.x, 0.5 + vUv.y * 0.5)).rgb; float a = texture2D(map, vec2(vUv.x, vUv.y * 0.5)).r; gl_FragColor = vec4(c, a); }'
+    });
+    this.apply = () => { const m = this.el.getObject3D('mesh'); if (m && m.material !== this.mat) m.material = this.mat; };
+    this.apply();
+    this.el.addEventListener('object3dset', this.apply);
+  },
+  tick() { this.apply(); }
+});
+</script>
 <style>
   :root{--brand:#004b8d;--ink:#0f2742;--paper:#ffffff;--muted:#5a6b80}
   html,body{margin:0;height:100%;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
@@ -42,11 +64,13 @@
   color-space="sRGB" renderer="colorManagement: true; physicallyCorrectLights: true" vr-mode-ui="enabled: false" xr-mode-ui="enabled: false"
   device-orientation-permission-ui="enabled: false">
   <a-assets>
-    <video id="vid" src="pmi-welcome.mp4" preload="auto" muted playsinline webkit-playsinline crossorigin="anonymous"></video>
+    <video id="vid" src="pmi-welcome-alpha.mp4" preload="auto" muted playsinline webkit-playsinline crossorigin="anonymous"></video>
   </a-assets>
   <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
   <a-entity id="target" mindar-image-target="targetIndex: 0">
-    <a-video id="overlay" src="#vid" width="1" height="1" position="0 0 0.001" visible="false"></a-video>
+    <!-- Transparent animation floats just above the printed poster (poster = 1 x 1 unit, centred at 0,0) -->
+    <a-entity id="overlay" geometry="primitive: plane; width: 1; height: 1" stacked-video="src: #vid"
+      position="0 1.05 0.05" visible="false"></a-entity>
   </a-entity>
 </a-scene>
 
