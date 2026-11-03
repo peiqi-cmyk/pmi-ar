@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>PM-International Malaysia · Leadership Convention 2026 AR</title>
+<meta name="description" content="Scan the Welcome poster with your phone camera to bring it to life.">
+<script src="lib/aframe.min.js"></script>
+<script src="lib/mindar-image-aframe.prod.js"></script>
+<style>
+  :root{--brand:#004b8d;--ink:#0f2742;--paper:#ffffff;--muted:#5a6b80}
+  html,body{margin:0;height:100%;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+  #start{position:fixed;inset:0;z-index:20;background:var(--paper);color:var(--ink);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:18px;text-align:center;
+    padding:max(24px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left))}
+  #start h1{margin:0;color:var(--brand);font-size:clamp(24px,7vw,34px);line-height:1.2}
+  #start p{margin:0;color:var(--muted);line-height:1.55;max-width:32ch}
+  .zh{font-size:15px}
+  button{font:700 17px system-ui,-apple-system,sans-serif;color:#fff;background:var(--brand);border:0;border-radius:999px;
+    padding:15px 34px;min-height:50px;cursor:pointer}
+  button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+  #hint{position:fixed;left:50%;transform:translateX(-50%);bottom:max(28px,env(safe-area-inset-bottom));z-index:10;
+    background:rgba(0,40,80,.78);color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;white-space:nowrap}
+  #replay{position:fixed;right:max(16px,env(safe-area-inset-right));top:max(16px,env(safe-area-inset-top));z-index:10;
+    font-size:14px;padding:10px 16px;min-height:40px}
+  #err{color:#b00020;font-size:14px;max-width:34ch}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div id="start">
+  <h1>Welcome To<br>Leadership Convention 2026</h1>
+  <p>Lay the poster flat, tap start, allow the camera, then point your phone at the poster.</p>
+  <p class="zh">把海报平放在桌上，点击开始并允许使用镜头，然后用手机对准海报。</p>
+  <button id="go" type="button">Start AR · 开始</button>
+  <p id="err" hidden></p>
+</div>
+<div id="hint" hidden>Point at the poster · 对准海报</div>
+<button id="replay" type="button" hidden>↻ Replay</button>
+
+<a-scene id="scene" mindar-image="imageTargetSrc: targets.mind; autoStart: false; uiScanning: no; uiLoading: no; filterMinCF: 0.0001; filterBeta: 0.001"
+  color-space="sRGB" renderer="colorManagement: true; antialias: true" vr-mode-ui="enabled: false" xr-mode-ui="enabled: false"
+  device-orientation-permission-ui="enabled: false">
+  <a-assets>
+    <img id="i-buildings" src="img/buildings.png">
+    <img id="i-car" src="img/car.png">
+    <img id="i-clock" src="img/clock.png">
+    <img id="i-welcome" src="img/welcome.png">
+    <img id="i-line1" src="img/line1.png">
+    <img id="i-line2" src="img/line2.png">
+    <img id="i-stamp" src="img/stamp.png">
+  </a-assets>
+  <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+  <!-- Poster = 1 x 1 unit centred at 0,0. "stage" stands things up: its y = up off the poster, z = toward the viewer. -->
+  <a-entity id="target" mindar-image-target="targetIndex: 0">
+    <a-entity id="stage" rotation="90 0 0" visible="false">
+      <a-entity id="p-clock" position="0.34 0 -0.36">
+        <a-image src="#i-clock" width="0.268" height="0.70" position="0 0.35 0" material="shader: flat; alphaTest: 0.5; side: double"></a-image>
+      </a-entity>
+      <a-entity id="p-buildings" position="0 0 -0.12">
+        <a-image src="#i-buildings" width="1" height="0.533" position="0 0.2665 0" material="shader: flat; alphaTest: 0.5; side: double"></a-image>
+      </a-entity>
+      <a-entity id="p-car" position="-0.2 0 0.2">
+        <a-entity id="car-shake">
+          <a-image src="#i-car" width="0.588" height="0.324" position="0 0.162 0" material="shader: flat; alphaTest: 0.5; side: double"></a-image>
+        </a-entity>
+      </a-entity>
+      <a-entity id="p-welcome" position="-0.07 0.80 -0.26">
+        <a-image src="#i-welcome" width="0.78" height="0.123" material="shader: flat; transparent: true; side: double"></a-image>
+      </a-entity>
+      <a-entity id="p-line1" position="-0.06 0.685 -0.26">
+        <a-image src="#i-line1" width="0.62" height="0.032" material="shader: flat; transparent: true; side: double"></a-image>
+      </a-entity>
+      <a-entity id="p-line2" position="-0.06 0.645 -0.26">
+        <a-image src="#i-line2" width="0.64" height="0.032" material="shader: flat; transparent: true; side: double"></a-image>
+      </a-entity>
+      <!-- The chop lands flat on the poster, right on top of the printed stamp -->
+      <a-entity id="p-stamp" position="-0.31 0.004 -0.40" rotation="-90 0 0">
+        <a-image src="#i-stamp" width="0.26" height="0.172" material="shader: flat; transparent: true; side: double"></a-image>
+      </a-entity>
+    </a-entity>
+  </a-entity>
+</a-scene>
+
+<script>
+const $ = id => document.getElementById(id);
+const scene = $('scene'), target = $('target'), stage = $('stage');
+const hint = $('hint'), replay = $('replay'), err = $('err');
+const P = k => $('p-' + k).object3D;
+
+// Wall mode (?mode=wall): layers sit in shallow relief in front of a hanging poster instead of standing up.
+const WALL = new URLSearchParams(location.search).get('mode') === 'wall';
+if (WALL) { stage.setAttribute('rotation', '0 0 0'); stage.setAttribute('position', '0 -0.5 0'); }
+
+// ---------- easing ----------
+const clamp = x => Math.max(0, Math.min(1, x));
+const outCubic = p => 1 - Math.pow(1 - p, 3);
+const outQuad = p => 1 - (1 - p) * (1 - p);
+const inQuad = p => p * p;
+const outBack = p => { const c = 1.70158; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
+const outBounce = p => {
+  const n = 7.5625, d = 2.75;
+  if (p < 1 / d) return n * p * p;
+  if (p < 2 / d) return n * (p -= 1.5 / d) * p + 0.75;
+  if (p < 2.5 / d) return n * (p -= 2.25 / d) * p + 0.9375;
+  return n * (p -= 2.625 / d) * p + 0.984375;
+};
+const lerp = (a, b, p) => a + (b - a) * p;
+const D = Math.PI / 180;
+
+// ---------- timeline (seconds) ----------
+const T = { buildings: [0, 0.9], car: [0.8, 1.5], clock: [1.8, 1.4], welcome: [3.0, 0.7], line1: [3.5, 0.5], line2: [3.75, 0.5], stamp: [4.6, 0.45] };
+const prog = (k, t) => clamp((t - T[k][0]) / T[k][1]);
+const show = (k, t) => { P(k).visible = t >= T[k][0]; };
+
+// Resting positions (same as the position="" attributes in the scene above)
+const V = (x, y, z) => ({ x, y, z });
+const home = { clock: V(0.34, 0, -0.36), buildings: V(0, 0, -0.12), car: V(-0.2, 0, 0.2),
+  welcome: V(-0.07, 0.80, -0.26), line1: V(-0.06, 0.685, -0.26), line2: V(-0.06, 0.645, -0.26), stamp: V(-0.31, 0.004, -0.40) };
+const shake = $('car-shake').object3D;
+
+function pose(t) {
+  // Buildings fold up from the poster like a pop-up book
+  show('buildings', t);
+  P('buildings').rotation.x = -90 * D * (1 - outBack(prog('buildings', t)));
+
+  // Car drives in from the left, then keeps idling with a small shake
+  show('car', t);
+  P('car').position.x = lerp(home.car.x - 1.1, home.car.x, outCubic(prog('car', t)));
+  if (t >= T.car[0]) { shake.position.y = 0.004 * Math.abs(Math.sin(t * 22)); shake.rotation.z = 0.8 * D * Math.sin(t * 31); }
+
+  // Clock hops in from the right
+  show('clock', t);
+  const pc = prog('clock', t);
+  P('clock').position.x = lerp(home.clock.x + 0.75, home.clock.x, outQuad(pc));
+  P('clock').position.y = 0.28 * (1 - outBounce(pc));
+
+  // Text pops up, floating above the buildings
+  ['welcome', 'line1', 'line2'].forEach(k => {
+    show(k, t); const p = prog(k, t), s = Math.max(0.001, outBack(p));
+    P(k).scale.set(s, s, s);
+    P(k).position.y = home[k].y + 0.02 * Math.sin(t * 1.6 + home[k].y * 9) * (p >= 1 ? 1 : 0);
+  });
+
+  // Chop drops and slams flat onto the poster
+  show('stamp', t);
+  const ps = prog('stamp', t), hit = t - (T.stamp[0] + T.stamp[1]);
+  const squash = hit > 0 && hit < 0.18 ? 1 + 0.1 * Math.sin(hit / 0.18 * Math.PI) : 1;
+  const s = lerp(2.2, 1, inQuad(ps)) * squash;
+  P('stamp').scale.set(s, s, s);
+  P('stamp').position.y = lerp(0.55, home.stamp.y, inQuad(ps));
+  P('stamp').rotation.z = lerp(28, 0, inQuad(ps)) * D;
+
+  // Little camera-shake feel on impact: the whole stage jolts
+  const j = hit > 0 && hit < 0.25 ? 0.006 * Math.sin(hit * 80) * (1 - hit / 0.25) : 0;
+  stage.object3D.position.z = j;
+}
+
+// ---------- clock driven only while the poster is visible ----------
+let t = 0, running = false, last = 0, started = false;
+scene.addEventListener('loaded', () => pose(0));
+function frame(now) {
+  if (running) { t += Math.min(0.05, (now - last) / 1000); pose(t); }
+  last = now; requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+$('go').addEventListener('click', () => {
+  const start = () => scene.systems['mindar-image-system'].start();
+  scene.hasLoaded ? start() : scene.addEventListener('loaded', start, { once: true });
+});
+scene.addEventListener('arReady', () => { $('start').hidden = true; hint.hidden = false; });
+scene.addEventListener('arError', () => {
+  err.hidden = false;
+  err.textContent = 'Camera could not start. Open this page in Safari or Chrome and allow camera access. 镜头无法开启，请用 Safari 或 Chrome 打开并允许使用镜头。';
+});
+target.addEventListener('targetFound', () => {
+  hint.hidden = true; stage.setAttribute('visible', true); replay.hidden = false;
+  if (!started) { started = true; t = 0; }
+  running = true;
+});
+target.addEventListener('targetLost', () => { hint.hidden = false; running = false; });
+replay.addEventListener('click', () => { t = 0; pose(0); });
+</script>
+</body>
+</html>
