@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>PM-International Malaysia · Leadership Convention 2026 AR</title>
+<meta name="description" content="Scan the Welcome poster with your phone camera to bring it to life.">
+<script src="lib/aframe.min.js"></script>
+<script src="lib/mindar-image-aframe.prod.js"></script>
+<script>
+// Plays a "stacked alpha" video: colour in the top half, alpha mask in the bottom half.
+// Works with plain H.264 MP4, so the transparency shows on iPhone and Android alike.
+AFRAME.registerComponent('stacked-video', {
+  schema: { src: { type: 'selector' } },
+  init() {
+    const tex = new THREE.VideoTexture(this.data.src);
+    tex.colorSpace = THREE.NoColorSpace;
+    tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; tex.generateMipmaps = false;
+    this.mat = new THREE.ShaderMaterial({
+      uniforms: { map: { value: tex } },
+      transparent: true, depthWrite: false, side: THREE.DoubleSide,
+      vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+      fragmentShader: 'uniform sampler2D map; varying vec2 vUv; void main(){ vec3 c = texture2D(map, vec2(vUv.x, 0.5 + vUv.y * 0.5)).rgb; float a = texture2D(map, vec2(vUv.x, vUv.y * 0.5)).r; gl_FragColor = vec4(c, a); }'
+    });
+    this.apply = () => { const m = this.el.getObject3D('mesh'); if (m && m.material !== this.mat) m.material = this.mat; };
+    this.apply();
+    this.el.addEventListener('object3dset', this.apply);
+  },
+  tick() { this.apply(); }
+});
+</script>
+<style>
+  :root{--brand:#004b8d;--ink:#0f2742;--paper:#ffffff;--muted:#5a6b80}
+  html,body{margin:0;height:100%;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+  #start{position:fixed;inset:0;z-index:20;background:var(--paper);color:var(--ink);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:18px;text-align:center;
+    padding:max(24px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left))}
+  #start h1{margin:0;color:var(--brand);font-size:clamp(24px,7vw,34px);line-height:1.2}
+  #start p{margin:0;color:var(--muted);line-height:1.55;max-width:32ch}
+  .zh{font-size:15px}
+  button{font:700 17px system-ui,-apple-system,sans-serif;color:#fff;background:var(--brand);border:0;border-radius:999px;
+    padding:15px 34px;min-height:50px;cursor:pointer}
+  button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+  #hint{position:fixed;left:50%;transform:translateX(-50%);bottom:max(28px,env(safe-area-inset-bottom));z-index:10;
+    background:rgba(0,40,80,.78);color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;white-space:nowrap}
+  #replay{position:fixed;right:max(16px,env(safe-area-inset-right));top:max(16px,env(safe-area-inset-top));z-index:10;
+    font-size:14px;padding:10px 16px;min-height:40px}
+  #err{color:#b00020;font-size:14px;max-width:34ch}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div id="start">
+  <h1>Welcome To<br>Leadership Convention 2026</h1>
+  <p>Tap start, allow the camera, then point your phone at the Welcome poster.</p>
+  <p class="zh">点击开始，允许使用镜头，然后把手机对准 Welcome 海报。</p>
+  <button id="go" type="button">Start AR · 开始</button>
+  <p id="err" hidden></p>
+</div>
+<div id="hint" hidden>Point at the poster · 对准海报</div>
+<button id="replay" type="button" hidden>↻ Replay</button>
+
+<a-scene id="scene" mindar-image="imageTargetSrc: targets.mind; autoStart: false; uiScanning: no; uiLoading: no; filterMinCF: 0.0001; filterBeta: 0.001"
+  color-space="sRGB" renderer="colorManagement: true; physicallyCorrectLights: true" vr-mode-ui="enabled: false" xr-mode-ui="enabled: false"
+  device-orientation-permission-ui="enabled: false">
+  <a-assets>
+    <video id="vid" src="pmi-welcome-alpha.mp4" preload="auto" muted playsinline webkit-playsinline crossorigin="anonymous"></video>
+  </a-assets>
+  <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+  <a-entity id="target" mindar-image-target="targetIndex: 0">
+    <!-- Poster = 1 x 1 unit, centred at 0,0. The pivot is the "fold line"; the animation hinges up from it. -->
+    <a-entity id="pivot" position="0 0.1 0" rotation="0 0 0">
+      <a-entity id="overlay" geometry="primitive: plane; width: 1; height: 1" stacked-video="src: #vid"
+        position="0 0.5 0" visible="false"></a-entity>
+    </a-entity>
+  </a-entity>
+</a-scene>
+
+<script>
+const vid = document.getElementById('vid');
+const scene = document.getElementById('scene');
+const target = document.getElementById('target');
+const overlay = document.getElementById('overlay');
+const hint = document.getElementById('hint');
+const replay = document.getElementById('replay');
+const err = document.getElementById('err');
+let played = false;
+
+// Default: poster lies flat on a table and the animation stands up from it like a pop-up card.
+// Add ?mode=wall to the link for a poster hung on a wall (animation floats above it instead).
+const pivot = document.getElementById('pivot');
+const WALL = new URLSearchParams(location.search).get('mode') === 'wall';
+if (WALL) { pivot.setAttribute('position', '0 0.55 0.05'); }
+function popUp() {
+  if (WALL) return;
+  pivot.removeAttribute('animation');
+  pivot.setAttribute('rotation', '0 0 0');
+  pivot.setAttribute('animation', { property: 'rotation', from: '0 0 0', to: '90 0 0', dur: 900, easing: 'easeOutBack' });
+}
+
+document.getElementById('go').addEventListener('click', async () => {
+  // Unlock video playback on iOS with this tap.
+  try { await vid.play(); vid.pause(); vid.currentTime = 0; } catch (e) {}
+  const start = () => {
+    const sys = scene.systems['mindar-image-system'];
+    sys.start();
+  };
+  scene.hasLoaded ? start() : scene.addEventListener('loaded', start, { once: true });
+});
+
+scene.addEventListener('arReady', () => {
+  document.getElementById('start').hidden = true;
+  hint.hidden = false;
+});
+scene.addEventListener('arError', () => {
+  err.hidden = false;
+  err.textContent = 'Camera could not start. Open this page in Safari or Chrome and allow camera access. 镜头无法开启，请用 Safari 或 Chrome 打开并允许使用镜头。';
+});
+
+target.addEventListener('targetFound', () => {
+  hint.hidden = true;
+  overlay.setAttribute('visible', true);
+  if (!played || vid.ended) { vid.currentTime = 0; played = true; popUp(); }
+  vid.play().catch(() => {});
+  replay.hidden = false;
+});
+target.addEventListener('targetLost', () => {
+  hint.hidden = false;
+  vid.pause();
+});
+vid.addEventListener('ended', () => { /* hold on final frame, which matches the poster */ });
+replay.addEventListener('click', () => { vid.currentTime = 0; popUp(); vid.play().catch(() => {}); });
+</script>
+</body>
+</html>
