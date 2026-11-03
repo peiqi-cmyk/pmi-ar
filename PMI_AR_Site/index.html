@@ -70,9 +70,6 @@ AFRAME.registerComponent('stacked-video', {
   <!-- Poster = 1 x 1 unit centred at 0,0, lying on the table.
        The transparent video stands upright on the poster's far edge (the red square in the mock-up). -->
   <a-entity id="target" mindar-image-target="targetIndex: 0">
-    <!-- Alpha half lies flat (0°) on the poster; its top edge meets the standing colour half at the fold. -->
-    <a-entity id="floor" geometry="primitive: plane; width: 1; height: 1" stacked-video="src: #vid; part: alpha"
-      position="0 0 0.002" visible="false"></a-entity>
     <!-- Colour half (transparent) stands up at 90° on the poster's far edge. -->
     <a-entity id="stand" position="0 0.5 0" rotation="90 0 0">
       <a-entity id="overlay" geometry="primitive: plane; width: 1; height: 1" stacked-video="src: #vid"
@@ -104,7 +101,7 @@ scene.addEventListener('arError', () => {
   err.textContent = 'Camera could not start. Open this page in Safari or Chrome and allow camera access. 镜头无法开启，请用 Safari 或 Chrome 打开并允许使用镜头。';
 });
 target.addEventListener('targetFound', () => {
-  hint.hidden = true; overlay.setAttribute('visible', true); $('floor').setAttribute('visible', !WALL); replay.hidden = false;
+  hint.hidden = true; overlay.setAttribute('visible', true); replay.hidden = false;
   if (!played) { vid.currentTime = 0; played = true; }
   vid.play().catch(() => {});
 });
